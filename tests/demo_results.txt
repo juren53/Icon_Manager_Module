@@ -1,0 +1,33 @@
+[IconLoader] WARNING: Icon not found: C:\Users\jimur\Projects\Icon_Manager_Module\resources\icons\nonexistent.png
+[IconLoader] WARNING: Null icon encountered (null icon)
+
+=== App Icon (app_icon) ===
+  Platform path : Windows: app.ico
+  isNull()      : False
+
+=== Icon Gallery (load) ===
+  app_128x128.png       loaded=True  size=128x128
+  app_16x16.png         loaded=True  size=16x16
+  app_24x24.png         loaded=True  size=24x24
+  app_256x256.png       loaded=True  size=256x256
+  app_32x32.png         loaded=True  size=32x32
+  app_48x48.png         loaded=True  size=48x48
+  app_64x64.png         loaded=True  size=64x64
+
+=== Missing Icon (load failure) ===
+  load('nonexistent.png').isNull() = True
+
+=== Qt Resource Path (load with :/) ===
+  load(':/icons/fake.png').isNull() = True
+  No file-existence warning expected (resource path)
+
+=== Theme Icon (theme) ===
+  theme('document-open', 'app.png').isNull() = False
+  Theme name attempted : document-open
+  Fallback file        : app.png
+
+=== Validation (ensure_valid) ===
+  ensure_valid(good_icon)  -> isNull=False  [PASS]
+  ensure_valid(null_icon)  -> isNull=True  [warned]
+
+=== Done ===
