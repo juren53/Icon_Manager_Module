@@ -15,7 +15,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Console output panel capturing all `[IconLoader]` messages in real-time
   - `--headless` flag for CI-friendly text-only output
 - **Demo results** (`tests/demo_results.txt`) — headless output for reference
-- **Win32 taskbar icon fix** — per-window `AppUserModelID` via COM `IPropertyStore` + `WM_SETICON`, resolving the generic Python icon shown when running under Microsoft Store Python
+- **`set_taskbar_icon(window, app_id)`** — new public method on `IconLoader` that applies the Win32 per-window `AppUserModelID` via COM `IPropertyStore` + `WM_SETICON`; silent no-op on non-Windows
+- **`_init_win32()`** — module-level helper that sets a process-level `AppUserModelID` at import time on Windows, so any app importing the module gets the taskbar fix automatically
+- **3 new tests** for `set_taskbar_icon()` (test suite now 20 tests total)
+
+### Changed
+- Moved Win32 taskbar icon fix from `demo_icon_loader.py` into `icon_loader.py` as a reusable API method
+- Demo app now calls `icons.set_taskbar_icon(window)` instead of inline Win32 COM code
 
 ## [0.2.0] - 2026-02-01
 
