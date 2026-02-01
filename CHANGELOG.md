@@ -5,6 +5,23 @@ All notable changes to Icon Manager Module will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2026-02-01
+
+### Added
+- **Integration procedure** (`PROCEDURE_IMM-integration.md`) — step-by-step guide for adding Icon_Manager_Module to an existing PyQt6 codebase
+  - 13 steps covering asset generation, code changes, build/packaging, platform launchers, and verification
+  - Migrate-vs-reuse guidance for projects with pre-existing icon directories
+  - PyInstaller `.spec` and `--add-data` configuration examples
+  - Platform launcher updates (`.desktop`, `Info.plist`)
+  - Minimal integration code example (QApplication + QMainWindow)
+- **Lessons learned** section documenting findings from the first real integration into [MDviewer](https://github.com/juren53/MDviewer)
+
+### First integration: MDviewer
+- Successfully integrated into MDviewer (PyQt6 markdown viewer)
+- 5 lines of code across 2 files (`main.py`, `viewer/main_window.py`)
+- Windows taskbar icon fix worked on first attempt
+- Identified gaps in original procedure: pre-existing icon directories, build/packaging config, platform launchers, manual verification requirement
+
 ## [0.3.0] - 2026-02-01
 
 ### Added
