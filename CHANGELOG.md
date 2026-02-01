@@ -5,6 +5,17 @@ All notable changes to Icon Manager Module will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-02-01
+
+### Added
+- **Test suite** (`tests/test_icon_loader.py`) — 17 pytest tests covering the full IconLoader API
+  - `__init__`: default and custom base_path resolution
+  - `load()`: existing file, missing file warning, Qt resource path bypass, return type
+  - `app_icon()`: return type, multi-resolution PNG fallback, empty directory warning, `app.png` fallback
+  - `theme()`: return type, fallback for unknown theme names
+  - `ensure_valid()`: null icon warning, valid icon silence, identity return
+  - Module-level `icons` instance type and default path
+
 ## [0.1.1] - 2026-02-01
 
 ### Added
