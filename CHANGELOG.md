@@ -5,6 +5,18 @@ All notable changes to Icon Manager Module will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-02-01
+
+### Added
+- **Demo application** (`demo_icon_loader.py`) — visual showcase of every IconLoader API method
+  - GUI mode: PyQt6 window with grouped sections for `app_icon()`, `load()`, `theme()`, and `ensure_valid()`
+  - Icon gallery displaying all `app_NxN.png` files at native resolution
+  - Failure cases: missing file (null icon + warning) and Qt resource path (no warning)
+  - Console output panel capturing all `[IconLoader]` messages in real-time
+  - `--headless` flag for CI-friendly text-only output
+- **Demo results** (`tests/demo_results.txt`) — headless output for reference
+- **Win32 taskbar icon fix** — per-window `AppUserModelID` via COM `IPropertyStore` + `WM_SETICON`, resolving the generic Python icon shown when running under Microsoft Store Python
+
 ## [0.2.0] - 2026-02-01
 
 ### Added
