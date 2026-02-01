@@ -1,6 +1,6 @@
 # Icon Manager Module
 
-**v0.2.0 2026-02-01**
+**v0.3.0 2026-02-01**
 
 A cross-platform icon management module for PyQt6 applications. This project provides a centralized, reliable solution for handling application icons consistently across Windows, macOS, and Linux.
 
@@ -83,6 +83,19 @@ from icon_loader import icons
 | macOS | `.icns` | 128, 256, 512 px | Bundle in `.app`; support dark mode templates |
 | Linux | `.png` / `.svg` | 16–256 px | Desktop file integration; theme icon fallback |
 
+## Demo
+
+A visual demo exercises every API method in a single window:
+
+```bash
+python demo_icon_loader.py             # GUI window
+python demo_icon_loader.py --headless  # text-only summary (for CI)
+```
+
+The GUI shows the app icon at 64px, a gallery of all sized PNGs at native resolution, missing-file and Qt resource path behavior, theme icon fallback, and `ensure_valid()` results. A console panel at the bottom captures all `[IconLoader]` warning output.
+
+> **Note (Windows):** The demo sets a per-window `AppUserModelID` via COM `IPropertyStore` so the taskbar displays the app icon instead of the generic Python icon. This is required when running under the Microsoft Store Python alias.
+
 ## Project Structure
 
 ```
@@ -92,12 +105,14 @@ Icon_Manager_Module/
 ├── README.md
 ├── CHANGELOG.md
 ├── icon_loader.py                           # Cross-platform icon loader module
+├── demo_icon_loader.py                      # Visual demo of every API method
 ├── generate_icons.py                        # ImageMagick icon asset generator
 ├── PLAN_Qt-Icon-Manaager-Module.md          # Module blueprint and implementation spec
 ├── Application_Icons_in_PyQt6_Per_Bing.md   # Best practices reference
 ├── Guide_to_Qt_Icon_Documentation.md        # Curated Qt documentation links
 ├── tests/                                   # Test suite
-│   └── test_icon_loader.py                  # 17 pytest tests for icon_loader
+│   ├── test_icon_loader.py                  # 17 pytest tests for icon_loader
+│   └── demo_results.txt                     # Headless demo output
 └── notes/                                   # Research from multiple sources
     ├── ...-per-ChatGPT.md
     ├── ...-per-Claude.md
@@ -119,7 +134,7 @@ The `notes/` directory contains consolidated research on PyQt6 icon behavior fro
 
 ## Status
 
-v0.2.0 — Icon loader module and test suite (17 pytest tests) are implemented. Icon generation pipeline is complete. Demo application is pending.
+v0.3.0 — Icon loader module, test suite (17 pytest tests), and demo application are complete. Icon generation pipeline is in place. The demo includes a Win32 taskbar icon fix for Microsoft Store Python.
 
 ## Requirements
 
