@@ -1,0 +1,32 @@
+# Changelog
+
+All notable changes to Icon Manager Module will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.0.1] - 2026-02-01 1154 CST
+
+### Added
+- **Icon Generation Script** (`generate_icons.py`) - ImageMagick-driven asset pipeline
+  - Generates all icon files needed for cross-platform PyQt6 use from a single source image
+  - Individual PNGs at 7 standard sizes: 16, 24, 32, 48, 64, 128, 256px
+  - Multi-resolution `.ico` for Windows (all 7 sizes embedded)
+  - `.icns` for macOS via `iconutil` on macOS or ImageMagick fallback on other platforms
+  - Primary `app.png` (256x256) for Linux
+  - CLI interface with `--output-dir` option (default: `resources/icons`)
+  - ImageMagick v7/v6 auto-detection with clear error messaging
+  - Source image validation via `magick identify`
+  - File summary with sizes printed on completion
+- **Project Documentation**
+  - README with module overview, planned API, platform requirements, and usage examples
+  - Detailed module blueprint and implementation spec (`PLAN_Qt-Icon-Manaager-Module.md`)
+  - Cross-platform icon best practices reference (`Application_Icons_in_PyQt6_Per_Bing.md`)
+  - Curated Qt icon documentation links (`Guide_to_Qt_Icon_Documentation.md`)
+  - Research notes from multiple AI sources in `notes/` directory
+
+### Technical
+- Python 3.x with no dependencies beyond the standard library
+- Requires ImageMagick (v6 or v7) installed and on PATH
+- Platform-aware `.icns` generation (native `iconutil` on macOS, ImageMagick fallback elsewhere)
+- Output directory created automatically via `os.makedirs`
