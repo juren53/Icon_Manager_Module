@@ -11,6 +11,7 @@ import sys
 import pytest
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui import QIcon
+from PyQt6.QtWidgets import QWidget
 
 # Ensure a QApplication exists before any QIcon work
 app = QApplication.instance() or QApplication([])
@@ -206,3 +207,28 @@ class TestModuleInstance:
         # Just verify it ends with the expected suffix
         assert str(icons.base_path).endswith("resources\\icons") or \
                str(icons.base_path).endswith("resources/icons")
+
+
+# ------------------------------------------------------------
+# set_taskbar_icon()
+# ------------------------------------------------------------
+
+class TestSetTaskbarIcon:
+    def test_noop_on_non_windows(self, loader, monkeypatch):
+        """On non-Windows, set_taskbar_icon() silently does nothing."""
+        monkeypatch.setattr(sys, "platform", "linux")
+        widget = QWidget()
+        loader.set_taskbar_icon(widget)  # should not raise
+
+    def test_accepts_app_id(self, loader, monkeypatch):
+        """Calling with a custom app_id string doesn't raise."""
+        monkeypatch.setattr(sys, "platform", "linux")
+        widget = QWidget()
+        loader.set_taskbar_icon(widget, app_id="com.example.myapp")
+
+    def test_no_error_on_shown_window(self, loader):
+        """Creates a real QWidget, shows it, calls set_taskbar_icon()."""
+        widget = QWidget()
+        widget.show()
+        loader.set_taskbar_icon(widget)  # exercises real Win32 path on Windows
+        widget.close()

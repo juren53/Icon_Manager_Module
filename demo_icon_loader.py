@@ -13,12 +13,6 @@ import io
 import pathlib
 import sys
 
-# On Windows, detach from the Python interpreter's taskbar identity
-# BEFORE any Qt imports so the taskbar shows our icon, not python.exe's.
-if sys.platform.startswith("win"):
-    import ctypes
-    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("iconloader.demo")
-
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon, QPixmap
 from PyQt6.QtWidgets import (
@@ -322,100 +316,6 @@ class DemoWindow(QWidget):
 # Entry point
 # ------------------------------------------------------------------
 
-def _win32_set_taskbar_icon(widget: QWidget) -> None:
-    """
-    Force the taskbar icon on Windows via COM property store + WM_SETICON.
-
-    The Microsoft Store Python alias overrides the process AppUserModelID,
-    so we set it per-window through IPropertyStore and also push the .ico
-    handle through WM_SETICON.
-    """
-    import ctypes
-    from ctypes import Structure, byref, c_byte, c_ulong, c_ushort, c_void_p, POINTER
-    from ctypes import wintypes
-
-    # ---- COM structures ----
-
-    class GUID(Structure):
-        _fields_ = [
-            ("Data1", c_ulong), ("Data2", c_ushort), ("Data3", c_ushort),
-            ("Data4", c_byte * 8),
-        ]
-
-    class PROPERTYKEY(Structure):
-        _fields_ = [("fmtid", GUID), ("pid", c_ulong)]
-
-    # Simplified PROPVARIANT – only needs to hold VT_LPWSTR
-    class PROPVARIANT(Structure):
-        _fields_ = [
-            ("vt", c_ushort),
-            ("reserved1", c_ushort), ("reserved2", c_ushort), ("reserved3", c_ushort),
-            ("ptr_val", c_void_p),
-        ]
-
-    IID_IPropertyStore = GUID(
-        0x886D8EEB, 0x8CF2, 0x4446,
-        (c_byte * 8)(0x8D, 0x02, 0xCD, 0xBA, 0x1D, 0xBD, 0xCF, 0x99),
-    )
-    PKEY_AppUserModel_ID = PROPERTYKEY(
-        GUID(0x9F4C2855, 0x9F79, 0x4B39,
-             (c_byte * 8)(0xA8, 0xD0, 0xE1, 0xD4, 0x2D, 0xE1, 0xD5, 0xF3)),
-        5,
-    )
-
-    hwnd = int(widget.winId())
-
-    # ---- 1. Set per-window AppUserModelID via IPropertyStore ----
-
-    shell32 = ctypes.windll.shell32
-    shell32.SHGetPropertyStoreForWindow.argtypes = [
-        wintypes.HWND, POINTER(GUID), POINTER(c_void_p),
-    ]
-    shell32.SHGetPropertyStoreForWindow.restype = ctypes.HRESULT
-
-    store = c_void_p()
-    hr = shell32.SHGetPropertyStoreForWindow(hwnd, byref(IID_IPropertyStore), byref(store))
-
-    if hr == 0 and store:
-        # Read vtable  (COM: ptr -> vtable -> [QI, AddRef, Release, ..., SetValue@6])
-        vtable = ctypes.cast(
-            ctypes.cast(store, POINTER(c_void_p))[0],
-            POINTER(c_void_p * 10),
-        ).contents
-
-        SetValue = ctypes.WINFUNCTYPE(
-            ctypes.HRESULT, c_void_p, POINTER(PROPERTYKEY), POINTER(PROPVARIANT),
-        )(vtable[6])
-        Release = ctypes.WINFUNCTYPE(c_ulong, c_void_p)(vtable[2])
-
-        app_id = ctypes.c_wchar_p("IconLoader.Demo")
-        pv = PROPVARIANT()
-        pv.vt = 31  # VT_LPWSTR
-        pv.ptr_val = ctypes.cast(app_id, c_void_p).value
-
-        SetValue(store, byref(PKEY_AppUserModel_ID), byref(pv))
-        Release(store)
-
-    # ---- 2. WM_SETICON with the .ico loaded through Win32 ----
-
-    user32 = ctypes.windll.user32
-    ico_path = str(icons.base_path / "app.ico")
-
-    IMAGE_ICON = 1
-    LR_LOADFROMFILE = 0x0010
-    WM_SETICON = 0x0080
-    ICON_BIG = 1
-    ICON_SMALL = 0
-
-    hicon_big = user32.LoadImageW(0, ico_path, IMAGE_ICON, 48, 48, LR_LOADFROMFILE)
-    hicon_small = user32.LoadImageW(0, ico_path, IMAGE_ICON, 16, 16, LR_LOADFROMFILE)
-
-    if hicon_big:
-        user32.SendMessageW(hwnd, WM_SETICON, ICON_BIG, hicon_big)
-    if hicon_small:
-        user32.SendMessageW(hwnd, WM_SETICON, ICON_SMALL, hicon_small)
-
-
 def main() -> None:
     app = QApplication.instance() or QApplication(sys.argv)
     app.setWindowIcon(icons.app_icon())
@@ -441,10 +341,7 @@ def main() -> None:
     window.resize(750, 800)
     window.show()
 
-    # Force the taskbar icon via Win32 API -- Qt's setWindowIcon is not
-    # enough when running under the Microsoft Store Python alias.
-    if sys.platform.startswith("win"):
-        _win32_set_taskbar_icon(window)
+    icons.set_taskbar_icon(window)
 
     sys.stdout = tee.original  # restore for normal operation
     sys.exit(app.exec())
