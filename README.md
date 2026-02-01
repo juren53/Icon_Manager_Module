@@ -1,6 +1,6 @@
 # Icon Manager Module
 
-**v0.3.0 2026-02-01**
+**v0.3.1 2026-02-01**
 
 A cross-platform icon management module for PyQt6 applications. This project provides a centralized, reliable solution for handling application icons consistently across Windows, macOS, and Linux.
 
@@ -67,6 +67,7 @@ Creates an icon loader instance. If no `base_path` is provided, defaults to `<pr
 | `app_icon()` | Returns the platform-appropriate application icon (`.ico` on Windows, `.icns` on macOS, `.png` on Linux) |
 | `load(filename)` | Loads an icon from disk or Qt resources |
 | `theme(name, fallback)` | Loads a system theme icon with a guaranteed fallback |
+| `set_taskbar_icon(window, app_id)` | Fix Windows taskbar icon via COM property store + WM_SETICON (no-op on other platforms) |
 | `ensure_valid(icon, context)` | Debug helper that warns when an icon is null |
 
 A convenience global instance is available:
@@ -74,6 +75,20 @@ A convenience global instance is available:
 ```python
 from icon_loader import icons
 ```
+
+## Integration Guide
+
+See **[PROCEDURE_IMM-integration.md](PROCEDURE_IMM-integration.md)** for a complete step-by-step procedure covering:
+
+1. Auditing existing icon assets
+2. Generating cross-platform icon files
+3. Copying files and resolving layout conflicts
+4. Code changes (5 lines across 2 files)
+5. Updating PyInstaller / packaging configuration
+6. Updating platform launchers (`.desktop`, `Info.plist`)
+7. Manual verification checklist
+
+The procedure includes a minimal integration example and lessons learned from the first real integration into [MDviewer](https://github.com/juren53/MDviewer).
 
 ## Platform Requirements
 
@@ -104,6 +119,7 @@ Icon_Manager_Module/
 ├── .gitignore                               # Ignored files (bytecode, build artifacts)
 ├── README.md
 ├── CHANGELOG.md
+├── PROCEDURE_IMM-integration.md             # Step-by-step integration guide
 ├── icon_loader.py                           # Cross-platform icon loader module
 ├── demo_icon_loader.py                      # Visual demo of every API method
 ├── generate_icons.py                        # ImageMagick icon asset generator
@@ -111,7 +127,7 @@ Icon_Manager_Module/
 ├── Application_Icons_in_PyQt6_Per_Bing.md   # Best practices reference
 ├── Guide_to_Qt_Icon_Documentation.md        # Curated Qt documentation links
 ├── tests/                                   # Test suite
-│   ├── test_icon_loader.py                  # 17 pytest tests for icon_loader
+│   ├── test_icon_loader.py                  # 20 pytest tests for icon_loader
 │   └── demo_results.txt                     # Headless demo output
 └── notes/                                   # Research from multiple sources
     ├── ...-per-ChatGPT.md
@@ -134,7 +150,7 @@ The `notes/` directory contains consolidated research on PyQt6 icon behavior fro
 
 ## Status
 
-v0.3.0 — Icon loader module, test suite (17 pytest tests), and demo application are complete. Icon generation pipeline is in place. The demo includes a Win32 taskbar icon fix for Microsoft Store Python.
+v0.3.1 — Icon loader module, test suite (20 pytest tests), demo application, and integration procedure are complete. Icon generation pipeline is in place. Successfully integrated into [MDviewer](https://github.com/juren53/MDviewer) as the first real-world deployment.
 
 ## Requirements
 
