@@ -5,6 +5,18 @@ All notable changes to Icon Manager Module will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0] - 2026-02-01
+
+### Added
+- **Icon Loader Module** (`icon_loader.py`) - Cross-platform icon loading API for PyQt6
+  - `IconLoader` class with configurable `base_path` (defaults to `resources/icons`)
+  - `app_icon()` — platform-aware application icon selection: `.ico` on Windows, `.icns` on macOS, multi-resolution PNGs on Linux, with automatic cross-platform fallback
+  - `load(filename)` — loads icons from disk with absolute path resolution, or from Qt Resource System (`:/` paths)
+  - `theme(name, fallback)` — system theme icon support with guaranteed fallback
+  - `ensure_valid(icon, context)` — debug helper that warns on null icons
+  - Module-level `icons` convenience instance for simple imports
+  - Graceful fallback chain: native format → sized PNGs (`app_NxN.png`) → `app.png` → null icon with warning
+
 ## [0.0.1] - 2026-02-01 1154 CST
 
 ### Added

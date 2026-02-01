@@ -1,6 +1,6 @@
 # Icon Manager Module
 
-**v0.0.1 2026-02-01 1154 CST**
+**v0.1.0 2026-02-01**
 
 A cross-platform icon management module for PyQt6 applications. This project provides a centralized, reliable solution for handling application icons consistently across Windows, macOS, and Linux.
 
@@ -114,7 +114,7 @@ The `notes/` directory contains consolidated research on PyQt6 icon behavior fro
 
 ## Status
 
-v0.0.1 — Icon generation pipeline is complete. The module architecture is fully designed and documented. Implementation of the icon loader module, test suite, and demo application are pending.
+v0.1.0 — Icon loader module is implemented. Icon generation pipeline is complete. Test suite and demo application are pending.
 
 ## Requirements
 
