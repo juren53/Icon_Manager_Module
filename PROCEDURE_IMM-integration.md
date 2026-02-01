@@ -11,7 +11,14 @@
 
 ## Steps
 
-### 1. Generate icon assets
+### 1. Audit existing icon assets
+
+Before generating new icons, check whether your project already has icon files
+(e.g. `assets/icons/`, `images/`, or similar). Note their location and naming
+convention — you will decide in step 2 whether to migrate to the standard
+`resources/icons/` layout or point `IconLoader` at your existing directory.
+
+### 2. Generate icon assets
 
 Run `generate_icons.py` against your source image to produce all platform-specific
 icon files:
@@ -35,7 +42,7 @@ To specify a different output directory:
 python generate_icons.py your_logo.png --output-dir path/to/icons
 ```
 
-### 2. Copy files into your project
+### 3. Copy files into your project
 
 Place these into your application tree:
 
@@ -54,9 +61,23 @@ your_app/
 ```
 
 `icon_loader.py` expects `resources/icons/` to sit next to it by default. If your
-layout differs, pass a custom path when constructing the loader (see step 3).
+layout differs, pass a custom path when constructing the loader (see step 4).
 
-### 3. Import the icon loader
+**If your project already has an icon directory** (e.g. `assets/icons/`), choose
+one of these approaches:
+
+- **Migrate:** Generate icons directly into a new `resources/icons/` directory and
+  remove the old icon files once everything works. Update any references (build
+  scripts, `.desktop` files, `.spec` files) to point to the new location.
+- **Reuse in place:** Generate icons into your existing directory
+  (`--output-dir assets/icons`) and point `IconLoader` at it via `base_path=`.
+  This avoids duplicate icon directories but means your existing files must coexist
+  with the `app.ico` / `app_NxN.png` naming convention.
+
+Avoid leaving icons in two locations long-term — it creates confusion about which
+set is authoritative.
+
+### 4. Import the icon loader
 
 ```python
 from icon_loader import icons
@@ -72,7 +93,7 @@ from icon_loader import IconLoader
 icons = IconLoader(base_path=pathlib.Path("path/to/icons"))
 ```
 
-### 4. Set the application icon
+### 5. Set the application icon
 
 ```python
 app = QApplication(sys.argv)
@@ -82,14 +103,14 @@ app.setWindowIcon(icons.app_icon())
 `app_icon()` automatically selects `app.ico` on Windows, `app.icns` on macOS, or
 multi-resolution PNGs on Linux.
 
-### 5. Set the window icon
+### 6. Set the window icon
 
 ```python
 window = QMainWindow()
 window.setWindowIcon(icons.app_icon())
 ```
 
-### 6. Fix the Windows taskbar icon
+### 7. Fix the Windows taskbar icon
 
 After showing the window, call `set_taskbar_icon()` to force Windows to display
 your icon on the taskbar (instead of the default Python icon):
@@ -109,7 +130,7 @@ To supply a custom AppUserModelID:
 icons.set_taskbar_icon(window, app_id="com.yourcompany.yourapp")
 ```
 
-### 7. Load additional icons
+### 8. Load additional icons
 
 For toolbar, menu, or status-bar icons placed in `resources/icons/`:
 
@@ -124,7 +145,7 @@ Qt Resource System paths are also supported:
 icon = icons.load(":/icons/save.png")
 ```
 
-### 8. Use theme icons (Linux)
+### 9. Use theme icons (Linux)
 
 Load a freedesktop theme icon with a guaranteed local fallback:
 
@@ -135,7 +156,7 @@ icon = icons.theme("document-save", "save.png")
 On Linux desktops this returns the theme icon; on other platforms (or if the theme
 icon is missing) it falls back to `save.png` from the icons directory.
 
-### 9. Debug null icons
+### 10. Debug null icons
 
 Wrap any icon in `ensure_valid()` to print a warning if it resolved to null:
 
@@ -149,14 +170,58 @@ Output when the icon is null:
 [IconLoader] WARNING: Null icon encountered (toolbar save button)
 ```
 
-### 10. Verify
+### 11. Update build/packaging configuration
 
-Run the application on Windows and confirm:
+If your project uses **PyInstaller**, **cx_Freeze**, or a similar packager, add
+the `resources/icons/` directory to the bundled data so icons are available in the
+distributed build.
+
+**PyInstaller `.spec` file** — add to the `datas` list:
+
+```python
+datas=[
+    ('resources/icons', 'resources/icons'),
+    # ... other data entries
+],
+```
+
+**PyInstaller `--add-data` flag** (command-line usage):
+
+```bash
+pyinstaller --add-data "resources/icons:resources/icons" main.py
+```
+
+Also update the `.spec` file's `icon=` parameter to use the generated `app.ico`:
+
+```python
+icon='resources/icons/app.ico',
+```
+
+### 12. Update platform launchers
+
+If your project has platform-specific launcher configurations, update them to
+reference the new icon paths:
+
+- **Linux `.desktop` file:** update the `Icon=` line to point to the new location
+  (e.g. `Icon=/path/to/your_app/resources/icons/app.png`)
+- **macOS `Info.plist`:** ensure `CFBundleIconFile` references `app.icns`
+- **Windows shortcut:** the `.ico` embedded by PyInstaller handles this
+  automatically if the `.spec` `icon=` is set correctly
+
+### 13. Verify
+
+Run the application and visually confirm the icons are correct. This step requires
+a manual check — icon rendering depends on the OS compositor and cannot be
+validated through automated tests.
+
+Check the following:
 
 - The window title-bar icon is correct.
-- The taskbar icon displays your image (not the generic Python icon).
-- On macOS, the dock icon is correct.
-- On Linux, the window icon is correct.
+- The **Windows taskbar** icon displays your image (not the generic Python icon).
+- On macOS, the **dock** icon is correct.
+- On Linux, the **window** icon is correct.
+- If applicable, build the packaged executable and repeat the checks above to
+  confirm icons are bundled correctly.
 
 ---
 
@@ -192,3 +257,35 @@ def main():
 if __name__ == "__main__":
     main()
 ```
+
+---
+
+## Lessons learned (from MDviewer integration)
+
+The first real integration into [MDviewer](https://github.com/juren53/MDviewer)
+revealed the following:
+
+**What worked well:**
+
+- The five code-level steps (import, app icon, window icon, taskbar fix, verify)
+  required only 5 new lines of code across 2 files.
+- `generate_icons.py` produced all platform assets from a single source PNG in one
+  command.
+- `set_taskbar_icon()` resolved the Windows taskbar icon on the first attempt with
+  no troubleshooting.
+- The cross-platform no-op design meant no `if sys.platform` guards were needed in
+  the application code.
+
+**What the original procedure missed:**
+
+- **Pre-existing icon directories.** MDviewer already had `assets/icons/` with
+  differently-named files. The procedure had no guidance on migrating from or
+  coexisting with an existing icon layout.
+- **Build/packaging updates.** The PyInstaller `.spec` file needed its `datas` list
+  updated to bundle `resources/icons/`, and its `icon=` parameter pointed at the
+  old path. Without this step, packaged builds would have missing icons.
+- **Platform launcher updates.** The Linux `.desktop` file still referenced the old
+  icon path after integration.
+- **Verification is manual.** Icon rendering is visual and OS-dependent. Automated
+  smoke tests cannot confirm correct icon display — the procedure now states this
+  explicitly.
