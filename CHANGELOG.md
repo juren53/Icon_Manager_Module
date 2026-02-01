@@ -5,6 +5,16 @@ All notable changes to Icon Manager Module will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-02-01
+
+### Added
+- `.gitattributes` for consistent cross-platform line ending handling
+- `.gitignore` for Python bytecode and packaging artifacts
+- `Project_Rules.md` and `ICON_MDviewer.png`
+
+### Changed
+- Updated README project structure to reflect all tracked files
+
 ## [0.1.0] - 2026-02-01
 
 ### Added

@@ -1,6 +1,6 @@
 # Icon Manager Module
 
-**v0.1.0 2026-02-01**
+**v0.1.1 2026-02-01**
 
 A cross-platform icon management module for PyQt6 applications. This project provides a centralized, reliable solution for handling application icons consistently across Windows, macOS, and Linux.
 
@@ -87,8 +87,11 @@ from icon_loader import icons
 
 ```
 Icon_Manager_Module/
+├── .gitattributes                           # Line ending normalization rules
+├── .gitignore                               # Ignored files (bytecode, build artifacts)
 ├── README.md
 ├── CHANGELOG.md
+├── icon_loader.py                           # Cross-platform icon loader module
 ├── generate_icons.py                        # ImageMagick icon asset generator
 ├── PLAN_Qt-Icon-Manaager-Module.md          # Module blueprint and implementation spec
 ├── Application_Icons_in_PyQt6_Per_Bing.md   # Best practices reference
