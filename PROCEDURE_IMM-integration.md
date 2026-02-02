@@ -284,8 +284,16 @@ revealed the following:
 - **Build/packaging updates.** The PyInstaller `.spec` file needed its `datas` list
   updated to bundle `resources/icons/`, and its `icon=` parameter pointed at the
   old path. Without this step, packaged builds would have missing icons.
+- **`resources/icons` must be in PyInstaller `datas`.** Icons that displayed
+  correctly when running via the Python interpreter were missing in the compiled
+  executable. The root cause was that the `.spec` file bundled `assets/` but not
+  `resources/icons/`, which is where `icon_loader.py` resolves its paths at
+  runtime. Adding `('resources/icons', 'resources/icons')` to the `datas` list
+  fixed the issue. Step 11 already documents this, but it is easy to overlook
+  when the project has a separate legacy icon directory that *is* bundled.
 - **Platform launcher updates.** The Linux `.desktop` file still referenced the old
   icon path after integration.
 - **Verification is manual.** Icon rendering is visual and OS-dependent. Automated
   smoke tests cannot confirm correct icon display — the procedure now states this
-  explicitly.
+  explicitly. Always verify icons in both the Python interpreter *and* the
+  compiled executable — passing one does not guarantee the other.
