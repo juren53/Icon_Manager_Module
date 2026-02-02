@@ -6,7 +6,7 @@ This file provides guidance to WARP (warp.dev) when working with code in this re
 
 Icon Manager Module is a **cross-platform icon management module for PyQt6 applications**. The core problem it solves: application icon behavior in Qt is notoriously inconsistent across platforms. There is no single "app icon" — instead, multiple consumers (taskbar, title bar, system tray, Alt-Tab switcher, About dialog) each have different requirements, formats, and caching rules. This module serves as the **single source of truth** for all icons in a PyQt6 application.
 
-**Current version:** v0.3.1 (2026-02-01)
+**Current version:** v0.3.2 (2026-02-02)
 
 ## Core Architecture
 

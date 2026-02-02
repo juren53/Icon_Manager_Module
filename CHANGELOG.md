@@ -5,6 +5,20 @@ All notable changes to Icon Manager Module will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.2] - 2026-02-02
+
+### Changed
+- **Integration procedure** — rewrote Linux `.desktop` guidance (Step 12) to use XDG hicolor icon theme installation instead of fragile absolute paths
+  - Step-by-step commands for installing multi-resolution PNGs into `~/.local/share/icons/hicolor/<size>/apps/`
+  - `.desktop` `Icon=` now uses theme name only (no path, no extension)
+  - Commands for installing `.desktop` file and updating icon/desktop caches
+- **Step 5** now includes `setDesktopFileName()` — required for Linux desktop environments to associate running windows with their `.desktop` file
+- **Step 13** verification checklist expanded with per-platform sections; Linux now lists all four independent icon display points (title bar, app launcher, taskbar, Alt+Tab)
+- **Minimal integration example** updated with `setApplicationName()` and `setDesktopFileName()` calls
+- **Lessons learned** — added Linux desktop integration subsection documenting XDG findings from LMDE/Cinnamon deployment
+
+---
+
 ## [0.3.1] - 2026-02-01
 
 ### Added

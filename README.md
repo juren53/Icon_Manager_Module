@@ -1,6 +1,6 @@
 # Icon Manager Module
 
-**v0.3.1 2026-02-01**
+**v0.3.2 2026-02-02**
 
 A cross-platform icon management module for PyQt6 applications. This project provides a centralized, reliable solution for handling application icons consistently across Windows, macOS, and Linux.
 
@@ -150,7 +150,7 @@ The `notes/` directory contains consolidated research on PyQt6 icon behavior fro
 
 ## Status
 
-v0.3.1 — Icon loader module, test suite (20 pytest tests), demo application, and integration procedure are complete. Icon generation pipeline is in place. Successfully integrated into [MDviewer](https://github.com/juren53/MDviewer) as the first real-world deployment.
+v0.3.2 — Icon loader module, test suite (20 pytest tests), demo application, and integration procedure are complete. Icon generation pipeline is in place. Successfully integrated into [MDviewer](https://github.com/juren53/MDviewer) as the first real-world deployment. Integration procedure updated with proper XDG hicolor theme installation for Linux.
 
 ## Requirements
 
