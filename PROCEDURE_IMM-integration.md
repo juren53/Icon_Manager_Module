@@ -97,11 +97,19 @@ icons = IconLoader(base_path=pathlib.Path("path/to/icons"))
 
 ```python
 app = QApplication(sys.argv)
+app.setApplicationName("YourApp")
+app.setDesktopFileName("YourApp")   # must match YourApp.desktop filename
 app.setWindowIcon(icons.app_icon())
 ```
 
 `app_icon()` automatically selects `app.ico` on Windows, `app.icns` on macOS, or
 multi-resolution PNGs on Linux.
+
+`setDesktopFileName()` is required on Linux so the desktop environment (GNOME,
+Cinnamon, KDE, etc.) can associate the running window with its `.desktop` file.
+Without this call, the taskbar and Alt+Tab window switcher may show a blank or
+generic icon even when the `.desktop` file itself is correct. The value must match
+the `.desktop` filename without the extension (e.g. `"MyApp"` for `MyApp.desktop`).
 
 ### 6. Set the window icon
 
@@ -200,13 +208,64 @@ icon='resources/icons/app.ico',
 ### 12. Update platform launchers
 
 If your project has platform-specific launcher configurations, update them to
-reference the new icon paths:
+reference the new icon paths.
 
-- **Linux `.desktop` file:** update the `Icon=` line to point to the new location
-  (e.g. `Icon=/path/to/your_app/resources/icons/app.png`)
-- **macOS `Info.plist`:** ensure `CFBundleIconFile` references `app.icns`
-- **Windows shortcut:** the `.ico` embedded by PyInstaller handles this
-  automatically if the `.spec` `icon=` is set correctly
+#### Linux `.desktop` file
+
+**Do not use absolute paths** for the `Icon=` field — they break silently whenever
+the project directory is moved or restructured. Instead, install icons into the
+XDG hicolor icon theme and reference them by theme name.
+
+**a) Install icons into the hicolor theme:**
+
+Copy each resolution PNG into the corresponding hicolor directory. Replace
+`yourapp` with your application's icon name (lowercase, no spaces):
+
+```bash
+mkdir -p ~/.local/share/icons/hicolor/{16x16,24x24,32x32,48x48,64x64,128x128,256x256}/apps
+
+cp resources/icons/app_16x16.png   ~/.local/share/icons/hicolor/16x16/apps/yourapp.png
+cp resources/icons/app_24x24.png   ~/.local/share/icons/hicolor/24x24/apps/yourapp.png
+cp resources/icons/app_32x32.png   ~/.local/share/icons/hicolor/32x32/apps/yourapp.png
+cp resources/icons/app_48x48.png   ~/.local/share/icons/hicolor/48x48/apps/yourapp.png
+cp resources/icons/app_64x64.png   ~/.local/share/icons/hicolor/64x64/apps/yourapp.png
+cp resources/icons/app_128x128.png ~/.local/share/icons/hicolor/128x128/apps/yourapp.png
+cp resources/icons/app_256x256.png ~/.local/share/icons/hicolor/256x256/apps/yourapp.png
+```
+
+**b) Update the `.desktop` file to use the theme name:**
+
+```ini
+Icon=yourapp
+```
+
+Use only the name — no path, no file extension. The desktop environment will
+look up the correct resolution from the hicolor theme automatically.
+
+**c) Install the `.desktop` file:**
+
+```bash
+cp YourApp.desktop ~/.local/share/applications/
+```
+
+**d) Update caches:**
+
+```bash
+gtk-update-icon-cache -f -t ~/.local/share/icons/hicolor/
+update-desktop-database ~/.local/share/applications/
+```
+
+A logout/login (or restarting the desktop shell) may be needed for the app
+launcher icon to refresh.
+
+#### macOS `Info.plist`
+
+Ensure `CFBundleIconFile` references `app.icns`.
+
+#### Windows shortcut
+
+The `.ico` embedded by PyInstaller handles this automatically if the `.spec`
+`icon=` is set correctly.
 
 ### 13. Verify
 
@@ -214,14 +273,26 @@ Run the application and visually confirm the icons are correct. This step requir
 a manual check — icon rendering depends on the OS compositor and cannot be
 validated through automated tests.
 
-Check the following:
+Check the following on each platform:
 
+**Windows:**
 - The window title-bar icon is correct.
-- The **Windows taskbar** icon displays your image (not the generic Python icon).
-- On macOS, the **dock** icon is correct.
-- On Linux, the **window** icon is correct.
-- If applicable, build the packaged executable and repeat the checks above to
-  confirm icons are bundled correctly.
+- The **taskbar** icon displays your image (not the generic Python icon).
+
+**macOS:**
+- The **dock** icon is correct.
+- The window title-bar icon is correct.
+
+**Linux** (each uses a different icon lookup path and can fail independently):
+- The **window title-bar** icon is correct (set by `setWindowIcon`).
+- The **app launcher / menu** icon is correct (from `.desktop` `Icon=` and the
+  hicolor theme).
+- The **taskbar / panel** icon is correct (requires `setDesktopFileName` +
+  hicolor theme icon).
+- The **Alt+Tab window switcher** icon is correct.
+
+If applicable, build the packaged executable and repeat the checks above to
+confirm icons are bundled correctly.
 
 ---
 
@@ -243,6 +314,8 @@ class MainWindow(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
+    app.setApplicationName("MyApp")
+    app.setDesktopFileName("MyApp")  # matches MyApp.desktop
     app.setWindowIcon(icons.app_icon())
 
     window = MainWindow()
@@ -297,3 +370,20 @@ revealed the following:
   smoke tests cannot confirm correct icon display — the procedure now states this
   explicitly. Always verify icons in both the Python interpreter *and* the
   compiled executable — passing one does not guarantee the other.
+
+**Linux desktop integration (discovered on LMDE / Cinnamon):**
+
+- **Absolute paths in `.desktop` `Icon=` are fragile.** The original procedure
+  recommended `Icon=/path/to/resources/icons/app.png`. After the Icon_Manager_Module
+  integration moved icons from `assets/icons/` to `resources/icons/`, the installed
+  `.desktop` file still pointed to the old path, resulting in blank icons everywhere
+  (app launcher, taskbar, window switcher). The fix was to install icons into the
+  XDG hicolor theme (`~/.local/share/icons/hicolor/<size>/apps/`) and use
+  `Icon=appname` (theme name only) in the `.desktop` file.
+- **`setDesktopFileName()` is required.** Without this PyQt6 call, Linux desktop
+  environments cannot associate the running window with its `.desktop` file. This
+  caused blank taskbar and Alt+Tab icons even when the `.desktop` file itself was
+  correctly configured.
+- **Linux has four independent icon display points** (title bar, app launcher,
+  taskbar, Alt+Tab) that each use different lookup mechanisms and can fail
+  independently. The verification checklist now covers all four.
