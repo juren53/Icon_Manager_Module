@@ -88,6 +88,32 @@ See `MDviewer/SESSION_SUMMARY_2026-02-02.md` for full details.
 
 ---
 
+## Title bar icon investigation (from MDviewer testing)
+
+After the XDG hicolor fix, title bar icons were still not visible in MDviewer.
+Investigation revealed this is a **Cinnamon window manager configuration and
+theme behavior**, not an application or Icon_Manager_Module issue:
+
+1. **Cinnamon's `button-layout` must include `menu`.** The default layout
+   `':minimize,maximize,close'` has nothing on the left side, so no title bar
+   icon is shown for any application. Adding `menu` enables it:
+   ```
+   gsettings set org.cinnamon.desktop.wm.preferences button-layout 'menu:minimize,maximize,close'
+   ```
+
+2. **The Mint-Y WM theme renders a generic hamburger icon.** Even with `menu`
+   enabled, Mint-Y shows a three-line hamburger icon for all applications rather
+   than the app-specific icon. A different WM theme would be needed for
+   per-application title bar icons.
+
+**Implication for the integration procedure:** Step 13 (Verify) lists the title
+bar icon as a checkpoint on Linux. Integrators should be aware that title bar
+icon visibility depends on the window manager theme, not on `setWindowIcon()`.
+The icon data is set correctly by Qt — the WM theme controls whether and how it
+is rendered.
+
+---
+
 ## Key findings
 
 - **Absolute paths in `.desktop` `Icon=` are fragile.** Any directory
@@ -99,6 +125,11 @@ See `MDviewer/SESSION_SUMMARY_2026-02-02.md` for full details.
 - **Linux has four independent icon display points** (title bar, app launcher,
   taskbar, Alt+Tab) that each use different lookup mechanisms and can fail
   independently.
+- **Title bar icon display is controlled by the window manager theme.** Cinnamon's
+  Mint-Y theme renders a generic hamburger menu icon regardless of the app icon.
+  The `button-layout` gsetting must include `menu` for any title bar icon to
+  appear, and even then the icon style depends on the WM theme, not the
+  application.
 
 ---
 
