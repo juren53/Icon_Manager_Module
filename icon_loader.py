@@ -34,7 +34,10 @@ class IconLoader:
             If None, defaults to: <project_root>/resources/icons
         """
         if base_path is None:
-            base_path = pathlib.Path(__file__).resolve().parent / "resources" / "icons"
+            if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+                base_path = pathlib.Path(sys._MEIPASS) / "resources" / "icons"
+            else:
+                base_path = pathlib.Path(__file__).resolve().parent / "resources" / "icons"
 
         self.base_path = base_path.resolve()
 
