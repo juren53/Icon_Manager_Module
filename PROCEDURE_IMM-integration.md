@@ -93,6 +93,24 @@ from icon_loader import IconLoader
 icons = IconLoader(base_path=pathlib.Path("path/to/icons"))
 ```
 
+> **⚠️ PyInstaller warning:** When you pass a custom `base_path`, `IconLoader`'s
+> built-in frozen-environment detection is bypassed. If your app will be compiled
+> with PyInstaller, you must resolve the path yourself:
+>
+> ```python
+> import sys
+> from pathlib import Path
+> from icon_loader import IconLoader
+>
+> if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+>     icons = IconLoader(base_path=Path(sys._MEIPASS) / "icons")
+> else:
+>     icons = IconLoader(base_path=Path(__file__).parent / "icons")
+> ```
+>
+> Without this, `Path(__file__).parent` resolves outside the `_MEIPASS` extraction
+> directory and your icons will not be found in the compiled executable.
+
 ### 5. Set the application icon
 
 ```python
@@ -387,3 +405,58 @@ revealed the following:
 - **Linux has four independent icon display points** (title bar, app launcher,
   taskbar, Alt+Tab) that each use different lookup mechanisms and can fail
   independently. The verification checklist now covers all four.
+
+---
+
+## Lessons learned (from HPM integration)
+
+The second integration into [HPM](https://github.com/juren53/HST-Metadata)
+(HSTL Photo Metadata Framework) revealed two additional issues, both specific to
+PyInstaller `console=False` GUI applications.
+
+**Custom `base_path` breaks frozen path resolution:**
+
+- HPM stores icons in `icons/` (not `resources/icons/`), so it constructs
+  `IconLoader(base_path=framework_dir / "icons")` with a custom path.
+- In source mode, `framework_dir = Path(__file__).parent.parent` resolves correctly.
+- In a frozen PyInstaller `.exe`, `Path(__file__).parent.parent` resolves to a path
+  **outside** the `_MEIPASS` temp extraction directory, so the bundled icons cannot
+  be found — the app launches but shows a generic icon.
+- **Fix (caller side):** The caller must handle `sys._MEIPASS` when computing a
+  custom `base_path`:
+
+  ```python
+  if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+      _icons_path = Path(sys._MEIPASS) / "icons"
+  else:
+      _icons_path = framework_dir / "icons"
+  icons = IconLoader(base_path=_icons_path)
+  ```
+
+- **Root cause:** `IconLoader.__init__()` has frozen-environment detection for its
+  *default* path (`resources/icons`), but when the caller passes a custom
+  `base_path`, that logic is bypassed. This is by design — the caller knows their
+  own directory layout — but Step 4 of the procedure should warn about it.
+
+**`console=False` makes `sys.stdout` `None`:**
+
+- PyInstaller's `console=False` option (standard for GUI apps — suppresses the
+  console window) sets `sys.stdout` and `sys.stderr` to `None` on Windows.
+- `icon_loader.py` contains 5 `print()` calls (all `[IconLoader] WARNING:` messages).
+  Any of these will crash the app with `'NoneType' object has no attribute 'write'`.
+- This does not surface during development (Python always has a console) or in
+  `console=True` builds. It only manifests in production `console=False` executables,
+  and only when a warning path is hit (e.g., a missing icon file).
+- **Fix (in icon_loader.py):** Added a module-level guard that redirects
+  `sys.stdout` / `sys.stderr` to `os.devnull` when they are `None`. This protects
+  all `print()` calls throughout the module and any downstream code that imports it.
+
+  ```python
+  if sys.stdout is None:
+      sys.stdout = open(os.devnull, "w")
+  if sys.stderr is None:
+      sys.stderr = open(os.devnull, "w")
+  ```
+
+- HPM also needed this guard in its own entry point and worker threads, since
+  `g2c.py` (CSV converter) uses `print()` extensively and runs in a `QThread`.

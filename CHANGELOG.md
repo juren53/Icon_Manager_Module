@@ -5,6 +5,25 @@ All notable changes to Icon Manager Module will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.4] - 2026-02-07
+
+### Fixed
+- **`console=False` crash** — `icon_loader.py` now redirects `sys.stdout` and `sys.stderr` to `os.devnull` when they are `None` (PyInstaller `console=False` on Windows sets them to `None`, causing `'NoneType' object has no attribute 'write'` on any `print()` call)
+  - Bug found during HPM (HSTL Photo Metadata Framework) compiled build: the 5 `[IconLoader] WARNING:` print statements could crash the application if any warning path was triggered
+
+### Changed
+- **Integration procedure** — added PyInstaller warning to Step 4 about custom `base_path` bypassing frozen-environment detection; callers must use `sys._MEIPASS` explicitly when passing a custom path
+- **Lessons learned** — added HPM integration section documenting custom `base_path` frozen path resolution and `console=False` stdout issues
+
+### Second integration: HPM
+- Successfully integrated into [HPM](https://github.com/juren53/HST-Metadata) (HSTL Photo Metadata Framework)
+- Icons generated from `ICON_HSTL.png` into project's `icons/` directory (non-default location)
+- Discovered that custom `base_path` requires caller-side `sys._MEIPASS` handling for frozen builds
+- Discovered that `console=False` + `print()` = crash — fixed in `icon_loader.py` itself
+- HSTL icon now displays in window title bar, taskbar, and Alt-Tab on compiled Windows executable
+
+---
+
 ## [0.3.3] - 2026-02-05
 
 ### Fixed
