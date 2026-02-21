@@ -60,6 +60,13 @@ your_app/
         └── (any additional toolbar/menu icons)
 ```
 
+> **⚠️ Naming convention — `app.png`, not `icon.png`:**
+> The Linux fallback icon **must** be named `app.png`. Common alternatives such as
+> `icon.png`, `logo.png`, or `my_app.png` will not be found by `IconLoader` and will
+> silently produce a null icon. If your project already has an icon file with a
+> different name, rename it to `app.png` (or generate fresh assets with
+> `generate_icons.py` which produces the correct names automatically).
+
 `icon_loader.py` expects `resources/icons/` to sit next to it by default. If your
 layout differs, pass a custom path when constructing the loader (see step 4).
 
@@ -405,6 +412,28 @@ revealed the following:
 - **Linux has four independent icon display points** (title bar, app launcher,
   taskbar, Alt+Tab) that each use different lookup mechanisms and can fail
   independently. The verification checklist now covers all four.
+
+---
+
+## Lessons learned (from git-sync-checker integration)
+
+The third integration into [git-sync-checker](https://github.com/juren53/git-sync-checker)
+revealed one recurring issue.
+
+**`icon.png` vs `app.png` naming confusion:**
+
+- The icon was initially copied from the `Icon_Manager_Module/workshop/` directory
+  and saved as `icon.png` — a natural, descriptive name.
+- `IconLoader` looks for `app.png` as the Linux fallback, so a file named `icon.png`
+  is silently ignored and produces a null icon.
+- The error only became apparent when the `.desktop` file was set up and the icon
+  did not appear correctly in the system menu.
+- **Fix:** Rename to `app.png`. Step 3 above now includes a prominent warning about
+  this.
+- **Root cause:** The naming convention is documented in the Step 2 table and Step 3
+  directory listing, but there was no explicit "do not use other names" callout. New
+  projects that copy a source icon manually (rather than running `generate_icons.py`)
+  are most at risk because `generate_icons.py` always produces the correct names.
 
 ---
 
