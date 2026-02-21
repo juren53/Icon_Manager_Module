@@ -6,7 +6,7 @@ This module is designed to be the **single source of truth** for all icons in a 
 
 ---
 
-# 🧩 `icon_loader.py` — A Robust Cross‑Platform Icon Loader
+ `icon_loader.py` — A Robust Cross‑Platform Icon Loader
 
 ```python
 """
@@ -113,7 +113,7 @@ icons = IconLoader()
 
 ---
 
-# 🧭 How to Use This Module in Your App
+## How to Use This Module in Your App
 
 ## **1. Add your icons**
 Place your icons here:
@@ -169,7 +169,7 @@ save_action = QAction(icons.theme("document-save", "save.png"), "Save", parent)
 
 ---
 
-# 🧪 Why This Module Works So Well
+## Why This Module Works So Well
 
 It solves the biggest cross‑platform icon problems:
 
