@@ -5,6 +5,19 @@ All notable changes to Icon Manager Module will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Third integration: JSM (JAUs-Systems)
+- Successfully integrated into [JSM](https://github.com/juren53/JAUs-Systems) (JAUs Systems Manager, PyQt6)
+- Discovered that `gtk-update-icon-cache` fails on `~/.local/share/icons/hicolor/` unless
+  `index.theme` is present — copy it first from `/usr/share/icons/hicolor/index.theme`
+  before running the cache update command (not covered in v0.3.2 procedure)
+- Confirmed that the installed `.desktop` file (`~/.local/share/applications/`) must be
+  manually updated when redeploying; updating the project-level `jsm.desktop` alone is
+  not sufficient
+
+---
+
 ## [0.3.4] - 2026-02-07
 
 ### Fixed

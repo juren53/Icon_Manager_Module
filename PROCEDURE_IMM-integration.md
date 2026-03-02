@@ -275,13 +275,30 @@ cp YourApp.desktop ~/.local/share/applications/
 
 **d) Update caches:**
 
+Before running `gtk-update-icon-cache`, ensure `index.theme` is present in the
+local hicolor directory — the cache tool requires it and will silently fail without
+it. If this is the first time you are using a local hicolor directory, copy it from
+the system:
+
 ```bash
-gtk-update-icon-cache -f -t ~/.local/share/icons/hicolor/
+# Only needed once, if ~/.local/share/icons/hicolor/index.theme does not exist:
+cp /usr/share/icons/hicolor/index.theme ~/.local/share/icons/hicolor/
+```
+
+Then update the caches:
+
+```bash
+gtk-update-icon-cache -f ~/.local/share/icons/hicolor/
 update-desktop-database ~/.local/share/applications/
 ```
 
 A logout/login (or restarting the desktop shell) may be needed for the app
 launcher icon to refresh.
+
+> **⚠️ Redeployment note:** Updating the project-level `.desktop` file does **not**
+> update the installed copy at `~/.local/share/applications/`. When redeploying
+> after a change to `Icon=` or other fields, re-run the `cp` command in step c)
+> to overwrite the installed file, then repeat step d).
 
 #### macOS `Info.plist`
 
@@ -489,3 +506,31 @@ PyInstaller `console=False` GUI applications.
 
 - HPM also needed this guard in its own entry point and worker threads, since
   `g2c.py` (CSV converter) uses `print()` extensively and runs in a `QThread`.
+
+---
+
+## Lessons learned (from JSM integration)
+
+The fourth integration into [JSM](https://github.com/juren53/JAUs-Systems)
+(JAUs Systems Manager, LMDE / Cinnamon) surfaced two Linux-specific deployment issues.
+
+**`gtk-update-icon-cache` requires `index.theme` in the local hicolor directory:**
+
+- Running `gtk-update-icon-cache -f ~/.local/share/icons/hicolor/` fails silently
+  (or with an error) if `~/.local/share/icons/hicolor/index.theme` does not exist.
+- This file is present in the system theme (`/usr/share/icons/hicolor/index.theme`)
+  but is not automatically created when you `mkdir` a local hicolor directory.
+- **Fix:** Copy `index.theme` from the system hicolor directory before running the
+  cache update command. Step 12d above now includes this as a prerequisite.
+
+**The installed `.desktop` file is not updated automatically on redeployment:**
+
+- JSM's project-level `jsm.desktop` was correctly updated to `Icon=jsm` in v0.0.4,
+  but the installed copy at `~/.local/share/applications/jsm.desktop` still had the
+  old `Icon=utilities-system-monitor` value — because the install step (Step 12c)
+  was not repeated after the change.
+- The result was that the app launcher showed the wrong icon even after Cinnamon was
+  restarted and the icon cache was rebuilt.
+- **Fix:** Always re-run the `cp` in Step 12c and the cache commands in Step 12d
+  whenever the `.desktop` file changes. The project file and the installed file are
+  independent — one does not automatically mirror the other.
